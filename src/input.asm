@@ -17,7 +17,7 @@ global key_left
 global key_right
 
 section .bss
-    key_w:     resw 1
+    key_w:     resb 1
     key_a:     resb 1
     key_s:     resb 1
     key_d:     resb 1
