@@ -12,6 +12,7 @@ global _start
 
 ; stdlib stuff
 extern printf
+extern puts
 
 ; a bunch of SDL1.2 library stuff
 extern SDL_Init
@@ -22,7 +23,24 @@ extern SDL_Flip
 extern SDL_Delay
 extern SDL_Quit
 
+; custom subroutines and asst. global data
 extern setup_colors
+extern sdl_rect_a
+extern sdl_rect_b
+extern screen
+extern screen_format
+extern draw_rect_a
+extern draw_rect_b
+
+%define rect_a_X(v) mov [sdl_rect_a + 0], word v
+%define rect_a_Y(v) mov [sdl_rect_a + 2], word v
+%define rect_a_W(v) mov [sdl_rect_a + 4], word v
+%define rect_a_H(v) mov [sdl_rect_a + 6], word v
+
+%define rect_b_X(v) mov [sdl_rect_b + 0], word v
+%define rect_b_Y(v) mov [sdl_rect_b + 2], word v
+%define rect_b_W(v) mov [sdl_rect_b + 4], word v
+%define rect_b_H(v) mov [sdl_rect_b + 6], word v
 
 section .bss
 color_lut_begin:
@@ -44,21 +62,15 @@ color_lut_begin:
     gray:    resd 1
 color_lut_end:
 
-    ; SDL_Surface ptr
-    screen: resq 1
-    screen_format: resq 1
-
-    ; a single SDL_Rect is 8 bytes. save space for a few
-    sdl_rect_a: resb 8
-    sdl_rect_b: resb 8
-
 section .data
 
-    proloque: db "Welcome to my olc game jam entry", 10, 0x00
+    proloque: db "Welcome to my olc:btb game jam entry", 10, 0x00
     ;printf_int: db "integer value: %d", 10, 0x00
 
 section .text
 _start:
+    ;push rbp
+    ;mov rbp, rsp
 
     mov rdi, proloque
     xor rax, rax ; set AL to zero
@@ -72,11 +84,10 @@ _start:
     mov rdi, 800          ; width
     mov rsi, 600          ; height
     mov rdx, 32           ; bpp (bits per pixel)
-    mov rcx, 1073741825   ; options for the window
-    call SDL_SetVideoMode ; 
+    mov rcx, 1073741825   ; ~~~ voodoo ~~~
+    call SDL_SetVideoMode
     mov [screen], rax     ; save the returned pointer
-    add rax, 8            ; advance to the format area
-    mov rax, [rax]        ;  fetch and replace current value of rax
+    mov rax, [rax + 8]    ; fetch the format field
     mov [screen_format], rax ; store fetched value
 
     ; generate the colors used in the program
@@ -85,14 +96,12 @@ _start:
     call setup_colors
 
     ; fill an SDL rect with proper data
-    mov [sdl_rect_a + 0], WORD 0   ; x
-    mov [sdl_rect_a + 2], WORD 0   ; y
-    mov [sdl_rect_a + 4], WORD 800 ; w
-    mov [sdl_rect_a + 6], WORD 600 ; h
-    mov rdi, [screen]   ; SDL_Surface ptr
-    mov rsi, sdl_rect_a ; SDL_Rect ptr
-    mov rdx, [gray]    ; pregenerated color
-    call SDL_FillRect
+    rect_a_X(0)   ; macro expansion gives proper offset into global SDL_Rect
+    rect_a_Y(0)   ; ...
+    rect_a_H(600) ; ...
+    rect_a_W(800) ; ...
+    mov rdi, [navy]
+    call draw_rect_a
 
     mov rdi, [screen]
     call SDL_Flip

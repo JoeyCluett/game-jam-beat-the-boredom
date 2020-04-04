@@ -27,20 +27,20 @@ section .text
 ; 14: silver 
 ; 15: gray   
 setup_colors:
-    push rbp
-    mov rbp, rsp
+    push rbp     ; create stack frame and re-align stack
+    mov rbp, rsp ; ...
 
     ; rdi : start of the color array
     ; rsi : SDL_Surface->format
-    push rdi
-    push rsi
+    push rdi ; save both of these pieces of information
+    push rsi ; ...
 
     ; white 0xFFFFFF
     mov rdi, [rbp-16] ; format
     mov rsi, 0xFF ; red
     mov rdx, 0xFF ; green
     mov rcx, 0xFF ; blue
-    call SDL_MapRGB
+    call SDL_MapRGB   ; new color is now in rax
     mov rdi, [rbp-8]     ; get the base pointer for the color array
     mov [rdi], DWORD eax ; store generated color
     add rdi, 4           ; advance pointer to next color entry

@@ -6,7 +6,8 @@ OBJ=./obj
 
 FILES= \
  ${OBJ}/main.o \
- ${OBJ}/colors.o
+ ${OBJ}/colors.o \
+ ${OBJ}/rect.o
 
 all: main
 
