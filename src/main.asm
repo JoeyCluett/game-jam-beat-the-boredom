@@ -10,27 +10,8 @@
 ; starting location:
 global _start
 
-; stdlib stuff
-extern printf
-extern puts
-
-; a bunch of SDL1.2 library stuff
-extern SDL_Init
-extern SDL_SetVideoMode
-extern SDL_FillRect
-extern SDL_MapRGB
-extern SDL_Flip
-extern SDL_Delay
-extern SDL_Quit
-
-; custom subroutines and asst. global data
-extern setup_colors
-extern sdl_rect_a
-extern sdl_rect_b
-extern screen
-extern screen_format
-extern draw_rect_a
-extern draw_rect_b
+; avoid cluttering up main.asm
+%include 'mainexterns.asm'
 
 %define rect_a_X(v) mov [sdl_rect_a + 0], word v
 %define rect_a_Y(v) mov [sdl_rect_a + 2], word v
@@ -43,38 +24,30 @@ extern draw_rect_b
 %define rect_b_H(v) mov [sdl_rect_b + 6], word v
 
 section .bss
-color_lut_begin:
-    white:   resd 1
-    black:   resd 1
-    maroon:  resd 1
-    red:     resd 1
-    orange:  resd 1
-    yellow:  resd 1
-    olive:   resd 1
-    purple:  resd 1
-    fuschia: resd 1
-    lime:    resd 1
-    green:   resd 1
-    navy:    resd 1
-    blue:    resd 1
-    aqua:    resd 1
-    silver:  resd 1
-    gray:    resd 1
-color_lut_end:
 
 section .data
 
-    proloque: db "Welcome to my olc:btb game jam entry", 10, 0x00
+    prologue: db "Welcome to my olc:btb game jam entry", 10, 0x00
+    epilogue: db "Thanks for playing!!", 10, 0x00
     ;printf_int: db "integer value: %d", 10, 0x00
 
 section .text
 _start:
+    ; not sure why but creating a stack frame here causes a segfault (likely 
+    ; due to misaligned stack). im guessing this is because _start is not
+    ; call'd but rather jmp'd to. no function call, no return address, 
+    ; no stack misalignment
     ;push rbp
     ;mov rbp, rsp
 
-    mov rdi, proloque
+    ; need some space for locals
+    sub rsp, 16 ; maintain stack alignment
+
+    mov rdi, prologue
     xor rax, rax ; set AL to zero
     call printf
+
+    call clear_inputs
 
     ; initialize all SDL subsystems
     mov rdi, 65535 ; SDL_INIT_EVERYTHING
@@ -84,7 +57,7 @@ _start:
     mov rdi, 800          ; width
     mov rsi, 600          ; height
     mov rdx, 32           ; bpp (bits per pixel)
-    mov rcx, 1073741825   ; ~~~ voodoo ~~~
+    mov rcx, 1073741825   ; ~~~ voodoo ~~~ ...jk
     call SDL_SetVideoMode
     mov [screen], rax     ; save the returned pointer
     mov rax, [rax + 8]    ; fetch the format field
@@ -95,22 +68,53 @@ _start:
     mov rsi, [screen_format] ; format info needed by SDL
     call setup_colors
 
+    ; save the color pointer in the stack for now
+    mov qword [rsp], color_lut_begin
+
+  main_loop:
+
+    ; call event evaluation subroutine
+    call evaluate_inputs
+    mov al, [quit_p]  ; grab quit flag
+    add al, [key_esc] ; add two flags together. if either of 
+                      ; them is high, results will be non-zero
+    cmp al, 0
+    jne end_main_loop
+
     ; fill an SDL rect with proper data
     rect_a_X(0)   ; macro expansion gives proper offset into global SDL_Rect
     rect_a_Y(0)   ; ...
     rect_a_H(600) ; ...
     rect_a_W(800) ; ...
-    mov rdi, [navy]
+
+    mov rax, [rsp]       ; grab color ptr from the stack
+    mov edi, dword [rax] ; deref that pointer to get a color
     call draw_rect_a
 
+    mov rax, [rsp] ; update color
+    add rax, 8     ; advance to next SDL color
+    mov [rsp], rax ; store new pointer
+
+    cmp rax, color_lut_end     ; compare current ptr to end ptr
+    jne main_flip_screen       ; if we are not to the end, skip next instruction
+    mov qword [rsp], color_lut_begin ; otherwise reset the color ptr
+
+  main_flip_screen:
     mov rdi, [screen]
     call SDL_Flip
 
-    mov rdi, 1000
+    mov rdi, 100   ; delay for a short time
     call SDL_Delay
 
+    jmp main_loop
+
+  end_main_loop:
     ; release SDL resources and quit   
     call SDL_Quit
+
+    mov rdi, epilogue
+    xor rax, rax ; set AL to zero
+    call printf
 
     ; exit program
     mov rbx, 0 ; exit code: 0

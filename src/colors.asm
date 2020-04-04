@@ -6,7 +6,46 @@
 extern SDL_MapRGB
 global setup_colors
 
+global color_lut_begin
+global color_lut_end
+global white
+global black
+global maroon
+global red
+global orange
+global yellow
+global olive
+global purple
+global fuschia
+global lime
+global green
+global navy
+global blue
+global aqua
+global silver
+global gray
+
 section .data
+
+section .bss
+color_lut_begin:
+    white:   resd 2
+    black:   resd 2
+    maroon:  resd 2
+    red:     resd 2
+    orange:  resd 2
+    yellow:  resd 2
+    olive:   resd 2
+    purple:  resd 2
+    fuschia: resd 2
+    lime:    resd 2
+    green:   resd 2
+    navy:    resd 2
+    blue:    resd 2
+    aqua:    resd 2
+    silver:  resd 2
+    gray:    resd 2
+color_lut_end:
 
 section .text
 
@@ -46,6 +85,11 @@ setup_colors:
     add rdi, 4           ; advance pointer to next color entry
     mov [rbp-8], rdi     ; replace old pointer with new pointer  
 
+    ; SDL_gfxPrimitives library needs different color format:
+    mov [rdi], DWORD 0xFFFFFFFF ; RGBA
+    add rdi, 4       ; advance pointer
+    mov [rbp-8], rdi ; store new pointer
+    
     ; black 0x000000
     mov rdi, [rbp-16]
     mov rsi, 0x00
@@ -56,6 +100,11 @@ setup_colors:
     mov [rdi], DWORD eax
     add rdi, 4          
     mov [rbp-8], rdi    
+
+        ; gfxP
+    mov [rdi], DWORD 0x000000FF
+    add rdi, 4
+    mov [rbp-8], rdi
 
     ; maroon 0x800000
     mov rdi, [rbp-16]
@@ -68,6 +117,11 @@ setup_colors:
     add rdi, 4          
     mov [rbp-8], rdi   
 
+        ; gfxP
+    mov [rdi], DWORD 0x800000FF
+    add rdi, 4
+    mov [rbp-8], rdi
+
     ; red 0xFF0000
     mov rdi, [rbp-16]
     mov rsi, 0xFF
@@ -78,6 +132,11 @@ setup_colors:
     mov [rdi], DWORD eax
     add rdi, 4          
     mov [rbp-8], rdi   
+
+        ; gfxP
+    mov [rdi], DWORD 0xFF0000FF
+    add rdi, 4
+    mov [rbp-8], rdi
 
     ; orange 0xFFA500
     mov rdi, [rbp-16]
@@ -90,6 +149,11 @@ setup_colors:
     add rdi, 4          
     mov [rbp-8], rdi   
 
+        ; gfxP
+    mov [rdi], DWORD 0xFFA500FF
+    add rdi, 4
+    mov [rbp-8], rdi
+
     ; yellow 0xFFFF00
     mov rdi, [rbp-16]
     mov rsi, 0xFF
@@ -100,6 +164,11 @@ setup_colors:
     mov [rdi], DWORD eax
     add rdi, 4          
     mov [rbp-8], rdi   
+
+        ; gfxP
+    mov [rdi], DWORD 0xFFFF00FF
+    add rdi, 4
+    mov [rbp-8], rdi
 
     ; olive 0x808000
     mov rdi, [rbp-16]
@@ -112,6 +181,11 @@ setup_colors:
     add rdi, 4          
     mov [rbp-8], rdi   
 
+        ; gfxP
+    mov [rdi], DWORD 0x808000FF
+    add rdi, 4
+    mov [rbp-8], rdi
+
     ; purple 0x800080
     mov rdi, [rbp-16]
     mov rsi, 0x80
@@ -122,6 +196,11 @@ setup_colors:
     mov [rdi], DWORD eax
     add rdi, 4          
     mov [rbp-8], rdi   
+
+        ; gfxP
+    mov [rdi], DWORD 0x800080FF
+    add rdi, 4
+    mov [rbp-8], rdi
 
     ; fuscia 0xFF00FF
     mov rdi, [rbp-16]
@@ -134,6 +213,11 @@ setup_colors:
     add rdi, 4          
     mov [rbp-8], rdi   
 
+        ; gfxP
+    mov [rdi], DWORD 0xFF00FFFF
+    add rdi, 4
+    mov [rbp-8], rdi
+
     ; lime 0x00FF00
     mov rdi, [rbp-16]
     mov rsi, 0x00
@@ -144,6 +228,11 @@ setup_colors:
     mov [rdi], DWORD eax
     add rdi, 4          
     mov [rbp-8], rdi   
+
+        ; gfxP
+    mov [rdi], DWORD 0x00FF00FF
+    add rdi, 4
+    mov [rbp-8], rdi
 
     ; green 0x008000
     mov rdi, [rbp-16]
@@ -156,6 +245,11 @@ setup_colors:
     add rdi, 4          
     mov [rbp-8], rdi   
 
+        ; gfxP
+    mov [rdi], DWORD 0x008000FF
+    add rdi, 4
+    mov [rbp-8], rdi
+
     ; navy 0x000080
     mov rdi, [rbp-16]
     mov rsi, 0x00
@@ -166,6 +260,11 @@ setup_colors:
     mov [rdi], DWORD eax
     add rdi, 4          
     mov [rbp-8], rdi   
+
+        ; gfxP
+    mov [rdi], DWORD 0x000080FF
+    add rdi, 4
+    mov [rbp-8], rdi
 
     ; blue 0x0000FF
     mov rdi, [rbp-16]
@@ -178,6 +277,11 @@ setup_colors:
     add rdi, 4          
     mov [rbp-8], rdi   
 
+        ; gfxP
+    mov [rdi], DWORD 0x0000FFFF
+    add rdi, 4
+    mov [rbp-8], rdi
+
     ; aqua 0x00FFFF
     mov rdi, [rbp-16]
     mov rsi, 0x00
@@ -188,6 +292,11 @@ setup_colors:
     mov [rdi], DWORD eax
     add rdi, 4          
     mov [rbp-8], rdi   
+
+        ; gfxP
+    mov [rdi], DWORD 0x00FFFFFF
+    add rdi, 4
+    mov [rbp-8], rdi
 
     ; silver 0xC0C0C0
     mov rdi, [rbp-16]
@@ -200,6 +309,11 @@ setup_colors:
     add rdi, 4          
     mov [rbp-8], rdi   
 
+        ; gfxP
+    mov [rdi], DWORD 0xC0C0C0FF
+    add rdi, 4
+    mov [rbp-8], rdi
+
     ; gray 0x808080
     mov rdi, [rbp-16]
     mov rsi, 0x80
@@ -210,6 +324,11 @@ setup_colors:
     mov [rdi], DWORD eax
     add rdi, 4          
     mov [rbp-8], rdi   
+
+        ; gfxP
+    mov [rdi], DWORD 0x808080FF
+    add rdi, 4
+    mov [rbp-8], rdi
 
     mov rsp, rbp
     pop rbp    

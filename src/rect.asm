@@ -39,7 +39,7 @@ draw_rect_b:
 
     mov rdx, rdi
     mov rdi, [screen]
-    mov rsi, sdl_rect_a
+    mov rsi, sdl_rect_b
     call SDL_FillRect
 
     add rsp, 8
