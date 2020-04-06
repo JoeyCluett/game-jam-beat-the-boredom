@@ -23,7 +23,8 @@ FILES= \
  ${OBJ}/main.o \
  ${OBJ}/colors.o \
  ${OBJ}/rect.o \
- ${OBJ}/input.o
+ ${OBJ}/input.o \
+ ${OBJ}/linearmap.o
 
 all: main
 
@@ -31,7 +32,7 @@ clean:
 	rm ${OBJ}/*
 
 main: ${FILES}
-	gcc -nostartfiles -o main ${FILES} -lSDL
+	gcc -nostartfiles -o main ${FILES} -lSDL -lSDL_gfx
 
 ${FILES}: ${OBJ}/%.o: ${SRC}/%.asm
 	${BUILDCMD} $< -o $@

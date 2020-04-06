@@ -24,6 +24,8 @@ global blue
 global aqua
 global silver
 global gray
+global brown
+global gold
 
 section .data
 
@@ -45,6 +47,8 @@ color_lut_begin:
     aqua:    resd 2
     silver:  resd 2
     gray:    resd 2
+    brown:   resd 2
+    gold:    resd 2
 color_lut_end:
 
 section .text
@@ -65,6 +69,7 @@ section .text
 ; 13: aqua   
 ; 14: silver 
 ; 15: gray   
+; 16: brown
 setup_colors:
     push rbp     ; create stack frame and re-align stack
     mov rbp, rsp ; ...
@@ -327,6 +332,38 @@ setup_colors:
 
         ; gfxP
     mov [rdi], DWORD 0x808080FF
+    add rdi, 4
+    mov [rbp-8], rdi
+
+    ; brown 0x8B4513
+    mov rdi, [rbp-16]
+    mov rsi, 0x8B
+    mov rdx, 0x45
+    mov rcx, 0x13
+    call SDL_MapRGB
+    mov rdi, [rbp-8]    
+    mov [rdi], DWORD eax
+    add rdi, 4          
+    mov [rbp-8], rdi   
+
+        ; gfxP
+    mov [rdi], DWORD 0x8B4513FF
+    add rdi, 4
+    mov [rbp-8], rdi
+
+    ; gold 0xFFDF00
+    mov rdi, [rbp-16]
+    mov rsi, 0xFF
+    mov rdx, 0xDF
+    mov rcx, 0x00
+    call SDL_MapRGB
+    mov rdi, [rbp-8]    
+    mov [rdi], DWORD eax
+    add rdi, 4          
+    mov [rbp-8], rdi   
+
+        ; gfxP
+    mov [rdi], DWORD 0xFFDF00FF
     add rdi, 4
     mov [rbp-8], rdi
 

@@ -11,6 +11,10 @@ extern SDL_MapRGB
 extern SDL_Flip
 extern SDL_Delay
 extern SDL_Quit
+extern SDL_ShowCursor
+extern SDL_GetTicks
+
+extern draw_stage
 
 ; input subsystem stuff
 extern evaluate_inputs
@@ -28,6 +32,9 @@ extern key_down
 extern key_left
 extern key_right
 
+extern mouse_X
+extern mouse_Y
+
 ; custom subroutines and asst. global data
 extern setup_colors
 extern sdl_rect_a
@@ -36,6 +43,8 @@ extern screen
 extern screen_format
 extern draw_rect_a
 extern draw_rect_b
+extern sdl_event
+extern draw_tree
 
 ; global colors and related info
 extern color_lut_begin
@@ -56,4 +65,4 @@ extern blue
 extern aqua
 extern silver
 extern gray
-
+extern brown

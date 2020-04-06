@@ -23,13 +23,17 @@ global _start
 %define rect_b_W(v) mov [sdl_rect_b + 4], word v
 %define rect_b_H(v) mov [sdl_rect_b + 6], word v
 
+global ticks
+
 section .bss
+
+    ticks: resd 1
 
 section .data
 
     prologue: db "Welcome to my olc:btb game jam entry", 10, 0x00
     epilogue: db "Thanks for playing!!", 10, 0x00
-    ;printf_int: db "integer value: %d", 10, 0x00
+    clickmessage: db "Mouse click!", 10, 0x00
 
 section .text
 _start:
@@ -41,7 +45,7 @@ _start:
     ;mov rbp, rsp
 
     ; need some space for locals
-    sub rsp, 16 ; maintain stack alignment
+    sub rsp, 32 ; maintain stack alignment
 
     mov rdi, prologue
     xor rax, rax ; set AL to zero
@@ -53,11 +57,15 @@ _start:
     mov rdi, 65535 ; SDL_INIT_EVERYTHING
     call SDL_Init
 
+    xor rdi, rdi ; SDL_DISABLE
+    call SDL_ShowCursor
+
     ; generate a screen
     mov rdi, 800          ; width
     mov rsi, 600          ; height
     mov rdx, 32           ; bpp (bits per pixel)
-    mov rcx, 1073741825   ; ~~~ voodoo ~~~ ...jk
+    ;mov rcx, 1073741825   ; ~~~ voodoo ~~~ ...jk
+    mov rcx, 3221225473    ; ~~~ voodoo ~~~ ...but in fullscreen
     call SDL_SetVideoMode
     mov [screen], rax     ; save the returned pointer
     mov rax, [rax + 8]    ; fetch the format field
@@ -74,36 +82,55 @@ _start:
   main_loop:
 
     ; call event evaluation subroutine
+    ;xor rdi, rdi ; evaluate_inputs expects a callback in rdi. wont call a nullptr tho (pfft... obviously)
+    mov rdi, mouse_click_callback
     call evaluate_inputs
+
+    ; evaluate_inputs updates all the input flags
     mov al, [quit_p]  ; grab quit flag
     add al, [key_esc] ; add two flags together. if either of 
-                      ; them is high, results will be non-zero
+                      ; them is high, result will be non-zero
     cmp al, 0
     jne end_main_loop
 
-    ; fill an SDL rect with proper data
-    rect_a_X(0)   ; macro expansion gives proper offset into global SDL_Rect
-    rect_a_Y(0)   ; ...
-    rect_a_H(600) ; ...
-    rect_a_W(800) ; ...
+    ; update tick count
+    call SDL_GetTicks
+    mov [ticks], eax
 
-    mov rax, [rsp]       ; grab color ptr from the stack
-    mov edi, dword [rax] ; deref that pointer to get a color
+    ; base to draw on
+    call draw_stage
+
+    ; draw a cross to follow the mouse pointer around
+    ; draw vertical bar
+    mov ax, word [mouse_X] ; works because little-endian is heckin awesome
+    mov bx, word [mouse_Y] ; ...
+    sub bx, 30 ; modify Y coordinate
+    rect_a_X(ax)
+    rect_a_Y(bx)
+    rect_a_H(60)
+    rect_a_W(1)
+    mov edi, dword [white]
     call draw_rect_a
 
-    mov rax, [rsp] ; update color
-    add rax, 8     ; advance to next SDL color
-    mov [rsp], rax ; store new pointer
+    ; draw the horizontal bar
+    mov ax, word [mouse_X]
+    mov bx, word [mouse_Y]
+    sub ax, 30 ; modify X coordinates
+    rect_a_X(ax)
+    rect_a_Y(bx)
+    rect_a_H(1)
+    rect_a_W(60)
+    mov edi, dword [white]
+    call draw_rect_a
 
-    cmp rax, color_lut_end     ; compare current ptr to end ptr
-    jne main_flip_screen       ; if we are not to the end, skip next instruction
-    mov qword [rsp], color_lut_begin ; otherwise reset the color ptr
+    ; draw...trees
+    call draw_trees
 
   main_flip_screen:
     mov rdi, [screen]
     call SDL_Flip
 
-    mov rdi, 100   ; delay for a short time
+    mov rdi, 15   ; delay for a short time. framerate regulation has no power here
     call SDL_Delay
 
     jmp main_loop
@@ -120,4 +147,43 @@ _start:
     mov rbx, 0 ; exit code: 0
     mov rax, 1 ; exit syscall number
     int 0x80   ; tell the troll we are done
+
+align 16
+draw_trees:
+    push rbp
+    mov rbp, rsp
+
+    ;mov rdi, 400
+    ;mov rsi, 300
+    ;mov edx, dword [green + 4]
+    ;call draw_tree
+
+    mov rsp, rbp
+    pop rbp
+    ret
+
+align 16
+mouse_click_callback:
+    push rbp
+    mov rbp, rsp
+    ; start body of callback
+    ;
+    ; the global SDL_Event structure is still in valid 
+    ; state during this callback and the mouse position 
+    ; was updated before the callback was called
+    ;
+
+    cmp [sdl_event], byte 5      ; SDL_MOUSEBUTTONDOWN
+    jne end_mouse_click_callback ; ignore SDL_MOUSEBUTTONUP
+
+    ; for now, just print a nice message
+    mov rdi, clickmessage
+    xor rax, rax
+    call printf
+
+  end_mouse_click_callback:
+    ; end body of callback
+    mov rsp, rbp
+    pop rbp
+    ret
 
