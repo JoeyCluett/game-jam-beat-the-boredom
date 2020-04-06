@@ -31,6 +31,6 @@ linearmap:
     mulss xmm4, xmm0 ; y_end *= x
 
     addss xmm3, xmm4 ; y_begin += y_end
-    movaps xmm0, xmm3 ; returned in xmm0
+    movss xmm0, xmm3 ; returned in xmm0
 
     ret

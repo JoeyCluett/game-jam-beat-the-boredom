@@ -2,6 +2,8 @@
 ; stdlib stuff
 extern printf
 extern puts
+extern sprintf
+extern bzero
 
 ; a bunch of SDL1.2 library stuff
 extern SDL_Init
@@ -13,6 +15,9 @@ extern SDL_Delay
 extern SDL_Quit
 extern SDL_ShowCursor
 extern SDL_GetTicks
+
+extern gfxPrimitivesSetFont
+extern stringColor
 
 extern draw_stage
 

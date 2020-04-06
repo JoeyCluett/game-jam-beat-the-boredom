@@ -28,12 +28,16 @@ global ticks
 section .bss
 
     ticks: resd 1
+    clicks: resd 1 ; count of number of times mouse has been clicked
+
+    stringbuffer: resb 32
 
 section .data
 
     prologue: db "Welcome to my olc:btb game jam entry", 10, 0x00
     epilogue: db "Thanks for playing!!", 10, 0x00
     clickmessage: db "Mouse click!", 10, 0x00
+    intconvert: db "clicks %d", 0x00
 
 section .text
 _start:
@@ -57,15 +61,21 @@ _start:
     mov rdi, 65535 ; SDL_INIT_EVERYTHING
     call SDL_Init
 
-    xor rdi, rdi ; SDL_DISABLE
+    xor rdi, rdi ; SDL_DISABLE=0
     call SDL_ShowCursor
+
+    ; setup the global font data
+    xor rdi, rdi
+    xor rsi, rsi
+    xor rdx, rdx
+    call gfxPrimitivesSetFont
 
     ; generate a screen
     mov rdi, 800          ; width
     mov rsi, 600          ; height
     mov rdx, 32           ; bpp (bits per pixel)
-    ;mov rcx, 1073741825   ; ~~~ voodoo ~~~ ...jk
-    mov rcx, 3221225473    ; ~~~ voodoo ~~~ ...but in fullscreen
+    mov rcx, 1073741825   ; ~~~ voodoo ~~~ ...jk
+    ;mov rcx, 3221225473    ; ~~~ voodoo ~~~ ...but in fullscreen
     call SDL_SetVideoMode
     mov [screen], rax     ; save the returned pointer
     mov rax, [rax + 8]    ; fetch the format field
@@ -100,6 +110,25 @@ _start:
     ; base to draw on
     call draw_stage
 
+    ; show the number of mouse clicks
+
+    mov rdi, stringbuffer ; need to zero out the buffer first
+    mov rsi, 32           ; ...
+    call bzero
+
+    mov rdi, stringbuffer ; space for converted integer
+    mov rsi, intconvert   ; format string
+    mov edx, [clicks]     ; integer to convert
+    xor rax, rax ; set AL to zero (varargs rules)
+    call sprintf
+
+    mov rdi, [screen] ; SDL_Surface ptr
+    mov si, 50        ; x offset
+    mov dx, 50        ; y offset
+    mov rcx, stringbuffer ; src buffer
+    mov r8d, [black + 4]  ; color to render with
+    call stringColor
+
     ; draw a cross to follow the mouse pointer around
     ; draw vertical bar
     mov ax, word [mouse_X] ; works because little-endian is heckin awesome
@@ -109,7 +138,7 @@ _start:
     rect_a_Y(bx)
     rect_a_H(60)
     rect_a_W(1)
-    mov edi, dword [white]
+    mov edi, dword [red]
     call draw_rect_a
 
     ; draw the horizontal bar
@@ -120,47 +149,30 @@ _start:
     rect_a_Y(bx)
     rect_a_H(1)
     rect_a_W(60)
-    mov edi, dword [white]
+    mov edi, dword [red]
     call draw_rect_a
 
-    ; draw...trees
-    call draw_trees
-
   main_flip_screen:
-    mov rdi, [screen]
+    mov rdi, [screen] ; SDL_Surface ptr
     call SDL_Flip
 
     mov rdi, 15   ; delay for a short time. framerate regulation has no power here
     call SDL_Delay
 
-    jmp main_loop
+    jmp main_loop ; game didnt quit so repeat the loop
 
   end_main_loop:
     ; release SDL resources and quit   
     call SDL_Quit
 
     mov rdi, epilogue
-    xor rax, rax ; set AL to zero
+    xor rax, rax ; set AL to zero (printf demands it)
     call printf
 
     ; exit program
     mov rbx, 0 ; exit code: 0
     mov rax, 1 ; exit syscall number
     int 0x80   ; tell the troll we are done
-
-align 16
-draw_trees:
-    push rbp
-    mov rbp, rsp
-
-    ;mov rdi, 400
-    ;mov rsi, 300
-    ;mov edx, dword [green + 4]
-    ;call draw_tree
-
-    mov rsp, rbp
-    pop rbp
-    ret
 
 align 16
 mouse_click_callback:
@@ -175,6 +187,9 @@ mouse_click_callback:
 
     cmp [sdl_event], byte 5      ; SDL_MOUSEBUTTONDOWN
     jne end_mouse_click_callback ; ignore SDL_MOUSEBUTTONUP
+
+    ; increment click count
+    inc dword [clicks]
 
     ; for now, just print a nice message
     mov rdi, clickmessage
