@@ -14,7 +14,8 @@
 #
 
 ASM=yasm
-OPTS=-f elf64 -i ./src/
+#OPTS=-f elf64 -i ./src/
+OPTS=-g dwarf2 -f elf64 -i ./src/ # with debug info
 BUILDCMD=${ASM} ${OPTS}
 SRC=./src
 OBJ=./obj
@@ -24,17 +25,19 @@ FILES= \
  ${OBJ}/colors.o \
  ${OBJ}/rect.o \
  ${OBJ}/input.o \
- ${OBJ}/linearmap.o
+ ${OBJ}/linearmap.o \
+ ${OBJ}/font.o
 
 all: main
 
 clean:
 	rm ${OBJ}/*
 
-main: ${FILES}
+main: obj/ ${FILES}
 	gcc -nostartfiles -o main ${FILES} -lSDL -lSDL_gfx
 
 ${FILES}: ${OBJ}/%.o: ${SRC}/%.asm
 	${BUILDCMD} $< -o $@
 
-
+obj/:
+	mkdir obj

@@ -364,8 +364,10 @@ align 16
 draw_rect_a:
     ; quick way to align stack
     sub rsp, 8
-
+    ;
     ; rdi : color of rectangle
+    ;
+
     mov rdx, rdi
     mov rdi, [screen]
     mov rsi, sdl_rect_a

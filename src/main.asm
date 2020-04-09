@@ -29,8 +29,13 @@ section .bss
 
     ticks: resd 1
     clicks: resd 1 ; count of number of times mouse has been clicked
-
     stringbuffer: resb 32
+
+    ; pointers to raw font data
+    fontptr:   resq 1
+
+    ; one entry for each state in _start routine
+    state_lookup_table: resq 2
 
 section .data
 
@@ -39,12 +44,18 @@ section .data
     clickmessage: db "Mouse click!", 10, 0x00
     intconvert: db "clicks %d", 0x00
 
+    fontdata_filename: db "assets/fontdata.txt", 0x00
+
 section .text
 _start:
     ; not sure why but creating a stack frame here causes a segfault (likely 
     ; due to misaligned stack). im guessing this is because _start is not
     ; call'd but rather jmp'd to. no function call, no return address, 
     ; no stack misalignment
+    ;
+    ; UPDATE: after some work with gdb, i have verfified that _start is jmp'd to. 
+    ; when this routine starts, there is no stack frame (no backtrace anyway)
+    ;
     ;push rbp
     ;mov rbp, rsp
 
@@ -57,18 +68,17 @@ _start:
 
     call clear_inputs
 
+    ; read in font data
+    mov rdi, fontdata_filename ; specify filename containing font data
+    call importfontfile        ; load font data into memory
+    mov [fontptr], rax         ; save the font data ptr locally
+
     ; initialize all SDL subsystems
     mov rdi, 65535 ; SDL_INIT_EVERYTHING
     call SDL_Init
 
     xor rdi, rdi ; SDL_DISABLE=0
     call SDL_ShowCursor
-
-    ; setup the global font data
-    xor rdi, rdi
-    xor rsi, rsi
-    xor rdx, rdx
-    call gfxPrimitivesSetFont
 
     ; generate a screen
     mov rdi, 800          ; width
@@ -122,12 +132,13 @@ _start:
     xor rax, rax ; set AL to zero (varargs rules)
     call sprintf
 
-    mov rdi, [screen] ; SDL_Surface ptr
-    mov si, 50        ; x offset
-    mov dx, 50        ; y offset
-    mov rcx, stringbuffer ; src buffer
-    mov r8d, [black + 4]  ; color to render with
-    call stringColor
+    mov rdi, intconvert ; string
+    mov esi, dword [black]     ; color
+    mov rdx, 100               ; x
+    mov rcx, 100               ; y
+    mov r8, [fontptr]          ; font data
+    mov r9, 5                  ; char size
+    call drawstring
 
     ; draw a cross to follow the mouse pointer around
     ; draw vertical bar

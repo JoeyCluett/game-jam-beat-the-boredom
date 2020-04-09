@@ -18,8 +18,10 @@ extern SDL_GetTicks
 
 extern gfxPrimitivesSetFont
 extern stringColor
+extern gfxPrimitivesFontdata
 
 extern draw_stage
+extern importfontfile
 
 ; input subsystem stuff
 extern evaluate_inputs
@@ -40,14 +42,17 @@ extern key_right
 extern mouse_X
 extern mouse_Y
 
+extern drawcharacter
+extern drawstring
+
 ; custom subroutines and asst. global data
 extern setup_colors
 extern sdl_rect_a
 extern sdl_rect_b
-extern screen
-extern screen_format
 extern draw_rect_a
 extern draw_rect_b
+extern screen
+extern screen_format
 extern sdl_event
 extern draw_tree
 
