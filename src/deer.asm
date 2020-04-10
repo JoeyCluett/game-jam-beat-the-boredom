@@ -12,7 +12,11 @@ extern deer_upper_right
 extern deer_lower_left
 extern deer_lower_right
 
-extern brown ; color of the deer
+extern brown     ; color of the deer
+extern darkbrown ; ...
+extern white
+extern black
+extern beige
 
 %define rect_a_X(v) mov [sdl_rect_a + 0], word v
 %define rect_a_Y(v) mov [sdl_rect_a + 2], word v
@@ -41,40 +45,213 @@ draw_deer:
     mov rbp, rsp
 
     ; space for locals
+    ;sub rsp, 16
+
+    mov rdi, deer_lower_right
+    call drawsingledeer
+
+    mov rdi, deer_lower_left
+    call drawsingledeer
+
+    mov rdi, deer_upper_right
+    call drawsingledeer
+
+    mov rdi, deer_upper_left
+    call drawsingledeer
+
+    ;rect_a_H(40)
+    ;rect_a_W(40)
+    ;mov eax, [deer_lower_right + 0] ; upper left X
+    ;rect_a_X(ax)
+    ;mov eax, [deer_lower_right + 4] ; upper left Y
+    ;rect_a_Y(ax)
+    ;mov edi, dword [brown]
+    ;call draw_rect_a
+
+    ;rect_a_H(40)
+    ;rect_a_W(40)
+    ;mov eax, [deer_upper_left + 0] ; upper left X
+    ;rect_a_X(ax)
+    ;mov eax, [deer_upper_left + 4] ; upper left Y
+    ;rect_a_Y(ax)
+    ;mov edi, dword [brown]
+    ;call draw_rect_a
+
+    ;rect_a_H(40)
+    ;rect_a_W(40)
+    ;mov eax, [deer_lower_left + 0] ; upper left X
+    ;rect_a_X(ax)
+    ;mov eax, [deer_lower_left + 4] ; upper left Y
+    ;rect_a_Y(ax)
+    ;mov edi, dword [brown]
+    ;call draw_rect_a
+
+    ;rect_a_H(40)
+    ;rect_a_W(40)
+    ;mov eax, [deer_upper_right + 0] ; upper left X
+    ;rect_a_X(ax)
+    ;mov eax, [deer_upper_right + 4] ; upper left Y
+    ;rect_a_Y(ax)
+    ;mov edi, dword [brown]
+    ;call draw_rect_a
+
+    mov rsp, rbp
+    pop rbp
+    ret
+
+align 16
+drawsingledeer:
+    push rbp
+    mov rbp, rsp
+    ;
+    ; rdi : deer position ptr (X/Y)
+    ;
+
     sub rsp, 16
+    mov qword [rsp + 0], rdi
 
+    ; draw first dark leg
     rect_a_H(40)
-    rect_a_W(40)
-    mov eax, [deer_lower_right + 0] ; upper left X
+    rect_a_W(5)
+    mov eax, dword [rdi + 0] ; X
+    add eax, 12
     rect_a_X(ax)
-    mov eax, [deer_lower_right + 4] ; upper left Y
+    mov eax, dword [rdi + 4] ; Y
+    rect_a_Y(ax)
+    mov edi, dword [darkbrown]
+    call draw_rect_a
+
+    mov rdi, qword [rsp + 0]
+
+    ; draw second dark leg
+    rect_a_H(40)
+    rect_a_W(5)
+    mov eax, dword [rdi + 0] ; X
+    add eax, 23
+    rect_a_X(ax)
+    mov eax, dword [rdi + 4] ; Y
+    rect_a_Y(ax)
+    mov edi, dword [darkbrown]
+    call draw_rect_a
+
+    mov rdi, qword [rsp + 0]
+
+    ; draw first light leg
+    rect_a_H(40)
+    rect_a_W(5)
+    mov eax, dword [rdi + 0] ; X
+    add eax, 3
+    rect_a_X(ax)
+    mov eax, dword [rdi + 4] ; Y
     rect_a_Y(ax)
     mov edi, dword [brown]
     call draw_rect_a
 
+    mov rdi, qword [rsp + 0]
+
+    ; draw second light leg
     rect_a_H(40)
-    rect_a_W(40)
-    mov eax, [deer_upper_left + 0] ; upper left X
+    rect_a_W(5)
+    mov eax, dword [rdi + 0] ; X
+    add eax, 32
     rect_a_X(ax)
-    mov eax, [deer_upper_left + 4] ; upper left Y
+    mov eax, dword [rdi + 4] ; Y
     rect_a_Y(ax)
     mov edi, dword [brown]
     call draw_rect_a
 
-    rect_a_H(40)
-    rect_a_W(40)
-    mov eax, [deer_lower_left + 0] ; upper left X
+    mov rdi, qword [rsp + 0]
+
+    ; draw first part of tail
+    rect_a_H(3)
+    rect_a_W(7)
+    mov eax, dword [rdi + 0] ; X
+    add eax, 40 ; adjust X
     rect_a_X(ax)
-    mov eax, [deer_lower_left + 4] ; upper left Y
+    mov eax, dword [rdi + 4] ; Y
+    add eax, 10 ; adjust Y
     rect_a_Y(ax)
     mov edi, dword [brown]
     call draw_rect_a
 
-    rect_a_H(40)
-    rect_a_W(40)
-    mov eax, [deer_upper_right + 0] ; upper left X
+    mov rdi, qword [rsp + 0]
+
+    ; draw second part of tail
+    rect_a_H(1)
+    rect_a_W(5)
+    mov eax, dword [rdi + 0] ; X
+    add eax, 40 ; adjust X
     rect_a_X(ax)
-    mov eax, [deer_upper_right + 4] ; upper left Y
+    mov eax, dword [rdi + 4] ; Y
+    add eax, 13 ; adjust Y
+    rect_a_Y(ax)
+    mov edi, dword [white]
+    call draw_rect_a
+
+    mov rdi, qword [rsp + 0]
+
+    ; draw neck
+    rect_a_H(15)
+    rect_a_W(8)
+    mov eax, dword [rdi + 0] ; X
+    add eax, -1
+    rect_a_X(ax)
+    mov eax, dword [rdi + 4] ; Y
+    add eax, -10
+    rect_a_Y(ax)
+    mov edi, dword [brown]
+    call draw_rect_a
+
+    mov rdi, qword [rsp + 0]
+
+    ; draw first antler
+    rect_a_H(11)
+    rect_a_W(3)
+    mov eax, dword [rdi + 0] ; X
+    add eax, 5
+    rect_a_X(ax)
+    mov eax, dword [rdi + 4] ; Y
+    add eax, -23
+    rect_a_Y(ax)
+    mov edi, dword [beige]
+    call draw_rect_a
+
+    mov rdi, qword [rsp + 0]
+
+    ; draw second antler
+    rect_a_H(3)
+    rect_a_W(11)
+    mov eax, dword [rdi + 0] ; X
+    add eax, 6
+    rect_a_X(ax)
+    mov eax, dword [rdi + 4] ; Y
+    add eax, -13
+    rect_a_Y(ax)
+    mov edi, dword [beige]
+    call draw_rect_a
+
+    mov rdi, qword [rsp + 0]
+
+    ; draw head
+    rect_a_H(11)
+    rect_a_W(18)
+    mov eax, dword [rdi + 0] ; X
+    add eax, -8
+    rect_a_X(ax)
+    mov eax, dword [rdi + 4] ; Y
+    add eax, -14
+    rect_a_Y(ax)
+    mov edi, dword [brown]
+    call draw_rect_a
+
+    mov rdi, qword [rsp + 0]
+
+    ; draw main body
+    rect_a_H(15)
+    rect_a_W(40)
+    mov eax, dword [rdi + 0] ; X
+    rect_a_X(ax)
+    mov eax, dword [rdi + 4] ; Y
     rect_a_Y(ax)
     mov edi, dword [brown]
     call draw_rect_a

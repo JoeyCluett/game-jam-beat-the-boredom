@@ -26,6 +26,8 @@ global silver
 global gray
 global brown
 global gold
+global darkbrown
+global beige
 
 section .data
 
@@ -49,6 +51,8 @@ color_lut_begin:
     gray:    resd 2
     brown:   resd 2
     gold:    resd 2
+    darkbrown: resd 2
+    beige:   resd 2
 color_lut_end:
 
 section .text
@@ -364,6 +368,38 @@ setup_colors:
 
         ; gfxP
     mov [rdi], DWORD 0xFFDF00FF
+    add rdi, 4
+    mov [rbp-8], rdi
+
+    ; darkbrown 0x2b1d0e
+    mov rdi, [rbp-16]
+    mov rsi, 0x2B
+    mov rdx, 0x1D
+    mov rcx, 0x0E
+    call SDL_MapRGB
+    mov rdi, [rbp-8]    
+    mov [rdi], DWORD eax
+    add rdi, 4          
+    mov [rbp-8], rdi   
+
+        ; gfxP
+    mov [rdi], DWORD 0x2B1D0EFF
+    add rdi, 4
+    mov [rbp-8], rdi
+
+    ; beige 0xf5f5dc
+    mov rdi, [rbp-16]
+    mov rsi, 0xf5
+    mov rdx, 0xf5
+    mov rcx, 0xdc
+    call SDL_MapRGB
+    mov rdi, [rbp-8]    
+    mov [rdi], DWORD eax
+    add rdi, 4          
+    mov [rbp-8], rdi   
+
+        ; gfxP
+    mov [rdi], DWORD 0xf5f5dcFF
     add rdi, 4
     mov [rbp-8], rdi
 

@@ -36,14 +36,10 @@ section .bss
     ticks: resd 1
     clicks: resd 1 ; count of number of times mouse has been clicked
 
-    ; pointers to raw font data
-    fontptr: resq 1
-
     deer_upper_left:  resd 2 ; x/y ints (half)
     deer_upper_right: resd 2 ; x/y ints (full)
     deer_lower_left:  resd 2 ; x/y ints (full)
     deer_lower_right: resd 2 ; x/y ints (half)
-    deer_end: ; end iterator for deer positions
 
     deer_half_tick: resd 1 ; 500ms
     deer_full_tick: resd 1 ; 1000ms
@@ -66,9 +62,7 @@ section .data
     epilogue: db "Thanks for playing!!", 10, "You scored %d points!", 10, 0x00
     clickmessage: db "Mouse click!", 10, 0x00
     intconvert: db "POINTS %d", 0x00
-    inttimeformat: db "TIME %d", 0x00
-
-    fontdata_filename: db "assets/fontdata.txt", 0x00
+    inttimeformat: db "%d seconds left", 0x00
 
 section .text
 align 16
@@ -97,16 +91,11 @@ _start:
     mov qword [state_deer_update + 0], eval_deer_full_A ; each state swaps to other when needed
     mov qword [state_deer_update + 8], eval_deer_half_B ; ...
 
-    ; read in font data
-    mov rdi, fontdata_filename ; specify filename containing font data
-    call importfontfile        ; load font data into memory
-    mov [fontptr], rax         ; save the font data ptr locally
-
     ; initialize all SDL subsystems
     mov rdi, 65535 ; SDL_INIT_EVERYTHING
     call SDL_Init
 
-    ; set initial conditions for deer ticks (haha)
+    ; set initial conditions for deer ticks
     mov [deer_half_tick], dword 500  ; this offset follows the deer the whole game
     mov [deer_full_tick], dword 1250 ; ...
 
@@ -117,8 +106,8 @@ _start:
     mov rdi, 800          ; width
     mov rsi, 600          ; height
     mov rdx, 32           ; bpp (bits per pixel)
-    mov rcx, 1073741825   ; ~~~ voodoo ~~~ ...jk
-    ;mov rcx, 3221225473    ; ~~~ voodoo ~~~ ...but in fullscreen
+    ;mov rcx, 1073741825   ; ~~~ voodoo ~~~ ...jk
+    mov rcx, 3221225473    ; ~~~ voodoo ~~~ ...but in fullscreen
     call SDL_SetVideoMode
     mov [screen], rax     ; save the returned pointer
     mov rax, [rax + 8]    ; fetch the format field
@@ -134,7 +123,7 @@ _start:
 
     ; set a point when the game ends
     call SDL_GetTicks ; get ticks after game is setup
-    add rax, 10000    ; calculate when the game should end (10s)
+    add rax, 20000    ; calculate when the game should end (20s)
     mov dword [maxtime], eax ; store end time for game
 
     call eval_time_left
@@ -213,7 +202,6 @@ _start:
 
     ; display the number of seconds left
 
-    ;sub rsp, 64  ; make space on stack
     mov rdi, rsp ; move buffer ptr
     add rdi, 64  ; move buffer ptr to beginning
     mov rsi, 64  ; no of bytes to zero out
@@ -233,7 +221,7 @@ _start:
     mov r8d, dword [black + 4]    
     call stringColor
 
-    add rsp, 64 ; destroy buffer space on stack
+    add rsp, 64 ; destroy buffer space on stack after displaying information
 
   main_flip_screen:
     mov rdi, [screen] ; SDL_Surface ptr
