@@ -26,7 +26,8 @@ FILES= \
  ${OBJ}/rect.o \
  ${OBJ}/input.o \
  ${OBJ}/linearmap.o \
- ${OBJ}/font.o
+ ${OBJ}/font.o \
+ ${OBJ}/deer.o
 
 all: main
 

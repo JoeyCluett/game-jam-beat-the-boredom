@@ -219,7 +219,10 @@ drawcharacter:
     mov qword [rsp + 40], r9  ; charsize
 
     ; for now, just print a box over the entire area
-    shl r9, 3 ; multiply by 8
+    ;shl r9, 3 ; multiply by 8
+    lea rax, [8*r9]
+    sub rax, r9
+    mov r9, rax
 
     rect_a_H(r9w)
     rect_a_W(r9w)

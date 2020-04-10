@@ -21,6 +21,9 @@ extern stringColor
 extern gfxPrimitivesFontdata
 
 extern draw_stage
+extern draw_deer
+extern testhitdeer
+extern removedeer
 extern importfontfile
 
 ; input subsystem stuff
