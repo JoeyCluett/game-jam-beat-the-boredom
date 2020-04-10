@@ -14,8 +14,8 @@
 #
 
 ASM=yasm
-#OPTS=-f elf64 -i ./src/
-OPTS=-g dwarf2 -f elf64 -i ./src/ # with debug info
+OPTS=-f elf64 -i ./src/
+#OPTS=-g dwarf2 -f elf64 -i ./src/ # with debug info
 BUILDCMD=${ASM} ${OPTS}
 SRC=./src
 OBJ=./obj
