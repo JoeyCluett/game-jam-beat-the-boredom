@@ -35,7 +35,7 @@ clean:
 	rm ${OBJ}/*
 
 main: obj/ ${FILES}
-	gcc -nostartfiles -o main ${FILES} -lSDL -lSDL_gfx
+	gcc -nostartfiles -no-pie -o main ${FILES} -lSDL -lSDL_gfx
 
 ${FILES}: ${OBJ}/%.o: ${SRC}/%.asm
 	${BUILDCMD} $< -o $@

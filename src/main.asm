@@ -33,7 +33,7 @@ global deer_lower_right
 
 section .bss
 
-    ticks: resd 1
+    ticks: resd 1  ; current result of SDL_GetTicks
     clicks: resd 1 ; count of number of times mouse has been clicked
 
     deer_upper_left:  resd 2 ; x/y ints (half)
